@@ -16,7 +16,10 @@ This project is part of a hands-on journey to learn **observability, monitoring,
 
 ## ⚡ Getting Started
 
-### 1️⃣ Clone the repository
+1️⃣ Clone the repository
 ```bash
 git clone https://github.com/<your-username>/real-time-observability-demo.git
 cd real-time-observability-demo
+
+2️⃣ Create a virtual environment
+
