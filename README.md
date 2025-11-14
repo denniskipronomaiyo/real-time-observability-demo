@@ -53,7 +53,7 @@ graph LR
 ```
 real-time-observability-demo/
 │
-├── main.py
+├── app.py
 ├── requirements.txt
 ├── Dockerfile
 ├── prometheus.yml
@@ -73,7 +73,7 @@ pip install -r requirements.txt
 Run the app:
 
 ```bash
-uvicorn main:app --reload
+uvicorn app:app --reload
 ```
 
 Expose metrics at:
