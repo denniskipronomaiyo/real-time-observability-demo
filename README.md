@@ -40,8 +40,8 @@ uvicorn app:app --reload --host 0.0.0.0 --port 8000
 | `/metrics` | Prometheus metrics endpoint        |
 
 Example metrics exposed:
-# HELP app_request_count Total request count
-# TYPE app_request_count counter
+app_request_count Total request count
+TYPE app_request_count counter
 app_request_count{method="GET",endpoint="/"} 12.0
 
 ## ⚡ Getting Started with prometheus
