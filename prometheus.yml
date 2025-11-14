@@ -2,6 +2,6 @@ global:
   scrape_interval: 2s   # How often to scrape targets (default is 1m)
 
 scrape_configs:
-  - job_name: "python-app"
+  - job_name: "app"
     static_configs:
-      - targets: ["host.docker.internal:8000"] 
+      - targets: ["app:8000"]

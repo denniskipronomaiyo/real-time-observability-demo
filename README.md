@@ -1,77 +1,237 @@
-# Real-Time Observability Demo 🚀
+# 📡 Real-Time Observability Demo
 
-A simple Python **FastAPI** application that exposes **custom Prometheus metrics** (counters, gauges, histograms) for real-time observability and alerting.
+A minimal end-to-end observability stack built with **FastAPI**, **Prometheus**, and **Grafana**.
+The project demonstrates:
 
-This project is part of a hands-on journey to learn **observability, monitoring, and alerting** by building from scratch.
+* Exposing **custom metrics**
+* **Scraping & storing** them with Prometheus
+* **Visualizing** them in Grafana
+* Running everything with **Docker Compose**
 
----
-
-## 📌 Features
-- Exposes a REST API (`/`) that simulates requests  
-- Tracks request **count, latency, and in-progress requests**  
-- Exposes Prometheus-compatible metrics at `/metrics`  
-- Built with **FastAPI + prometheus-client**  
+This is ideal for learning observability concepts or bootstrapping custom monitoring solutions.
 
 ---
 
-## ⚡ Getting Started
+## 🚀 Features
 
-1️⃣ Clone the repository
-```bash
-git clone https://github.com/<your-username>/real-time-observability-demo.git
-cd real-time-observability-demo
+* FastAPI service with:
+
+  * Counter
+  * Gauge
+  * Histogram
+  * A `/metrics` endpoint for Prometheus scraping
+* Prometheus service for:
+
+  * Metrics ingestion
+  * Basic alerting-ready config
+* Grafana service for:
+
+  * Dashboards
+  * Visualizations
+  * Querying metrics
+* One-command orchestration via Docker Compose
+
+---
+
+## 🧱 Architecture
+
+```mermaid
+graph LR
+    A[FastAPI App] -->|/metrics| B(Prometheus)
+    B --> C[Grafana Dashboards]
+    subgraph Docker Network
+        A
+        B
+        C
+    end
 ```
 
-2️⃣ Create a virtual environment
-python -m venv venv
-source venv/bin/activate   # Linux/Mac
-venv\Scripts\activate      # Windows
+---
 
-3️⃣ Install dependencies
+## 📦 Project Structure
+
+```
+real-time-observability-demo/
+│
+├── main.py
+├── requirements.txt
+├── Dockerfile
+├── prometheus.yml
+└── docker-compose.yml
+```
+
+---
+
+## 🧪 Local Development (without Docker)
+
+Install deps:
+
+```bash
 pip install -r requirements.txt
+```
 
-4️⃣ Run the app
-uvicorn app:app --reload --host 0.0.0.0 --port 8000
+Run the app:
 
-🔍 Endpoints
-| Endpoint   | Description                        |
-| ---------- | ---------------------------------- |
-| `/`        | Simple API returning JSON response |
-| `/metrics` | Prometheus metrics endpoint        |
+```bash
+uvicorn main:app --reload
+```
 
-Example metrics exposed:
-app_request_count Total request count
-TYPE app_request_count counter
-app_request_count{method="GET",endpoint="/"} 12.0
+Expose metrics at:
 
-## ⚡ Getting Started with prometheus
+```
+http://localhost:8000/metrics
+```
 
-🛠️ Step 1: Create prometheus.yml
+---
 
-🛠️ Step 2: Install Prometheus
+# 📊 Prometheus Setup
 
-If you have Docker installed:
+### 1. Prometheus config file (`prometheus.yml`)
 
-docker run -p 9090:9090 -v %cd%\prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+```yaml
+global:
+  scrape_interval: 5s
 
-## ⚡ Getting Started with Grafana
+scrape_configs:
+  - job_name: "app"
+    static_configs:
+      - targets: ["app:8000"]
+```
 
-🛠️ Step 1: Install Grafana
+### 2. Run Prometheus standalone (optional)
 
-docker run -d -p 3000:3000 --name grafana `
-  -e "GF_SECURITY_ADMIN_USER='' " `
-  -e "GF_SECURITY_ADMIN_PASSWORD='' " `
+```bash
+docker run -p 9090:9090 -v /absolute/path/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+```
+
+Prometheus UI:
+
+```
+http://localhost:9090
+```
+
+---
+
+# 📈 Grafana Setup
+
+### Run Grafana
+
+```bash
+docker run -d -p 3000:3000 --name grafana \
+  -e "GF_SECURITY_ADMIN_USER=admin" \
+  -e "GF_SECURITY_ADMIN_PASSWORD=admin" \
   grafana/grafana
+```
 
-🛠️ Step 2: Access Grafana
+Grafana UI:
 
-Open http://localhost:3000
- in your browser and log in.
+```
+http://localhost:3000
+```
 
-🛠️ Step 3:  Add Prometheus as a Data Source
+### Add Prometheus as a data source
 
-Go to Connections → Data sources → Add data source
+```
+URL: http://prometheus:9090
+```
 
-Select Prometheus
+### Create dashboards
 
-In the URL field, enter: http://host.docker.internal:9090
+Use any custom metric like:
+
+```
+custom_request_count_total
+```
+
+Or import a community dashboard (e.g., ID **3662**).
+
+---
+
+# 🐳 Running Everything with Docker Compose
+
+This project ships with a full working Docker Compose setup.
+
+### 1. `docker-compose.yml`
+
+```yaml
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: observability-app
+    ports:
+      - "8000:8000"
+    networks:
+      - observability
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - observability
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - observability
+
+networks:
+  observability:
+    driver: bridge
+```
+
+---
+
+### 2. Start all services
+
+```bash
+docker-compose up --build
+```
+
+Services:
+
+* App → [http://localhost:8000](http://localhost:8000)
+* Prometheus → [http://localhost:9090](http://localhost:9090)
+* Grafana → [http://localhost:3000](http://localhost:3000)
+
+---
+
+### 3. Stop services
+
+```bash
+docker-compose down
+```
+
+---
+
+# 📚 Next Steps
+
+* Add **Prometheus alerting rules**
+* Create **Grafana Alerts** (Slack, email)
+* Expose latency/error metrics from real endpoints
+* Create dashboards for:
+
+  * Request rate (RPS)
+  * Error rate
+  * Latency histograms
+* Add a service like **Loki** for logs
+
+---
+
+# 🤝 Contributing
+
+Pull requests are welcome.
+Feel free to open an issue for discussions, improvements, or enhancements.
