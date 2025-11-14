@@ -23,13 +23,12 @@ def home():
     REQUEST_COUNT.labels(method="GET", endpoint="/").inc()
 
     # simulate work
-    time.sleep(random.uniform(0.1, 0.5))
+    time.sleep(random.uniform(0.01, 5))
 
     latency = time.time() - start_time
     REQUEST_LATENCY.labels(endpoint="/").observe(latency)
 
-    return {"message": "Hello, world!"}
-
+    return {f"message at {start_time}": f"Hello, world! and it took {latency} seconds."}
 # Prometheus metrics endpoint
 @app.get("/metrics")
 def metrics():
